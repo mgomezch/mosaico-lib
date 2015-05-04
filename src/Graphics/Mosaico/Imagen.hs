@@ -1,3 +1,17 @@
+{-|
+Module      : Graphics.Mosaico.Imagen
+Description : Lectura de imágenes como matrices de píxeles
+Copyright   : ⓒ Manuel Gómez, 2015
+License     : BSD3
+Maintainer  : targen@gmail.com
+Stability   : experimental
+Portability : portable
+
+Tipos para representar imágenes como matrices (listas anidadas rectangulares) de
+píxeles de colores, y una función para cargar una imagen a esta representación a
+partir de un archivo.
+-}
+
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -30,6 +44,10 @@ import Text.Show             (Show, show)
 
 
 
+-- | Un punto en el espacio de colores RGB donde cada componente de color
+-- se especifica por un entero entre 0 y 255 (8 bits).  Como el color es
+-- toda la información almacenada en un píxel, este mismo tipo se usa para
+-- representar píxeles individuales en una 'Imagen'.
 data Color
   = Color
     { rojo, verde, azul ∷ Word8
@@ -38,10 +56,27 @@ data Color
 
 
 
+-- | La representación de una imagen como una matriz de píxeles dados por
+-- el 'Color' de cada uno.
 data Imagen
   = Imagen
     { anchura, altura ∷ Integer
+    -- ^ Las dimensiones de la imagen se guardan por separado para no tener que
+    -- recorrer las listas de píxeles cada vez que haga falta conocer sus
+    -- longitudes.
+
     , datos ∷ [[Color]]
+    -- ^ Los datos de color de cada píxel de la imagen.
+    --
+    -- Cada píxel se representa con un valor del tipo 'Color' que especifica el
+    -- color del píxel.  Los datos se organizan en una lista de filas de la
+    -- imagen, donde cada fila es a su vez una lista de cada píxel individual de
+    -- esa fila.
+    --
+    -- Esta lista de listas debe mantenerse rectangular: todas las filas deben
+    -- ser listas con la misma longitud, que además debe ser igual a la
+    -- 'anchura' de la misma 'Imagen'.  Además, la 'altura' debe ser igual a la
+    -- longitud de la lista de filas.
     }
 
 instance Show Imagen where
@@ -54,7 +89,18 @@ instance Show Imagen where
 
 
 
-leerImagen ∷ String → IO (Either String Imagen)
+-- | Leer un archivo e intentar convertirlo en una 'Imagen'.  Se soportan
+-- varios formatos de archivo de imagen, incluyendo PNG y JPEG.
+leerImagen
+  ∷ String
+  -- ^ El nombre del archivo a leer.
+
+  → IO (Either String Imagen)
+  -- ^ Si el archivo pudo leerse exitosamente y representarse como un valor
+  -- del tipo 'Imagen', 'leerImagen' retorna @'Right' imagen@.  Si no, se
+  -- retorna @'Left' razón@, donde @razón@ será un 'String' con la razón
+  -- por la cual la imagen no se pudo leer.
+
 leerImagen filename
   = do
     imagen ← (toImageRGB8 =≪) <$> readImage filename
@@ -65,7 +111,7 @@ leerImagen filename
         ImageRGB8   i → pure i
         ImageYCbCr8 i → pure $ convertImage i
         -- TODO: more conversions!
-        _ → throwError "conversion to RGB8 not implemented"
+        _ → throwError "conversión del formato de imagen a RGB8 no implantada"
 
     toImagen image
       = Imagen {..}

@@ -1,3 +1,17 @@
+{-|
+Module      : Graphics.Mosaico.Ventana
+Description : Ventanas interactivas con distribuciones de rectángulos
+Copyright   : ⓒ Manuel Gómez, 2015
+License     : BSD3
+Maintainer  : targen@gmail.com
+Stability   : experimental
+Portability : portable
+
+Representación orientada a objetos de una ventana interactiva donde se puede
+mostrar una @División@ con una parte enfocada, y obtener eventos de teclas
+pulsadas en la ventana.
+-}
+
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,7 +28,7 @@ module Graphics.Mosaico.Ventana
 
 import Control.Applicative                (pure)
 import Control.Concurrent                 (forkIO)
-import Control.Concurrent.STM.TMChan      (newTMChanIO, readTMChan, writeTMChan)
+import Control.Concurrent.STM.TMChan      (newTMChanIO, closeTMChan, readTMChan, writeTMChan)
 import Control.Concurrent.STM.TVar        (newTVarIO, readTVarIO, writeTVar)
 import Control.Monad                      (void)
 import Control.Monad.STM                  (atomically)
@@ -59,16 +73,56 @@ import System.IO                          (IO)
 
 
 
+-- | Un valor del tipo @Ventana@ es un objeto que representa a una ventana
+-- interactiva donde puede dibujarse una @División@.  Es posible, además,
+-- obtener información de qué teclas son pulsadas sobre la ventana.
 data Ventana
   = Ventana
     { mostrar   ∷ [Paso] → División → IO ()
+    -- ^ Dada una @Ventana@, una @División@, y una lista de @Paso@s,
+    -- representar gráficamente la @División@ dada sobre el lienzo de la
+    -- @Ventana@, haciendo resaltar visualmente el nodo del árbol alcanzado
+    -- si se realizan los movimientos correspondientes a la lista de
+    -- @Paso@s desde la raíz del árbol.
+    --
+    -- Los nodos se resaltan con un cuadro verde, y se colorean según el
+    -- tipo de nodo.  En el caso de nodos intermedios, se colorea en azul
+    -- la región correspondiente al primer subárbol del nodo binario, y en
+    -- rojo la región correspondiente al segundo subárbol.  En el caso de
+    -- nodos terminales (hojas), el rectángulo se colorea en amarillo.
+
     , leerTecla ∷ IO (Maybe String)
+    -- ^ Dada una @Ventana@, esperar por un evento de teclado.
+    --
+    -- Cuando sobre la ventana se haya pulsado alguna tecla que no haya sido
+    -- reportada a través de este cómputo, se producirá como resultado
+    -- @'Just' tecla@, donde @tecla@ será el nombre de la tecla.
+    --
+    -- Si la ventana ya ha sido cerrada, se producirá como resultado
+    -- 'Nothing'.
+    --
+    -- El texto correspondiente a cada tecla es aproximadamente igual al
+    -- nombre del símbolo en la biblioteca GDK sin el prefijo @GDK_KEY_@.
+    -- La lista completa está disponible en
+    -- <https://git.gnome.org/browse/gtk+/plain/gdk/gdkkeysyms.h el código fuente de la biblioteca GDK>.
+    -- Sin embargo, la mejor manera de descubrir cuál simbolo corresponde
+    -- a cada tecla es crear una @Ventana@ y hacer que se imprima el texto
+    -- correspondiente a cada tecla pulsada sobre ella.
+
     , cerrar    ∷ IO ()
+    -- ^ Dada una @Ventana@, hacer que se cierre y que no pueda producir
+    -- más eventos de teclado.
     }
 
 
 
-crearVentana ∷ Integer → Integer → IO Ventana
+-- | Construye un objeto del tipo @Ventana@ dadas sus dimensiones en número
+-- de píxeles.
+crearVentana
+  ∷ Integer    -- ^ Número de píxeles de anchura de la @Ventana@ a crear.
+  → Integer    -- ^ Número de píxeles de altura de la @Ventana@ a crear.
+  → IO Ventana -- ^ La @Ventana@ nueva, ya visible, con el lienzo en blanco.
+
 crearVentana anchura' altura'
   = do
     chan      ← newTMChanIO
@@ -107,7 +161,11 @@ crearVentana anchura' altura'
               =≪ readTVarIO diagramaV
         pure True
 
-    void $ onDestroy window mainQuit
+    void
+      $ onDestroy window
+      $ do
+        mainQuit
+        atomically $ closeTMChan chan
 
     widgetAddEvents window [KeyPressMask]
     widgetShowAll window
