@@ -60,7 +60,7 @@ data Color
 -- el 'Color' de cada uno.
 data Imagen
   = Imagen
-    { anchura, altura ∷ Integer
+    { anchura  altura ∷ Integer
     -- ^ Las dimensiones de la imagen se guardan por separado para no tener que
     -- recorrer las listas de píxeles cada vez que haga falta conocer sus
     -- longitudes.

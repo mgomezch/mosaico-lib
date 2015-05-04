@@ -8,7 +8,7 @@ Stability   : experimental
 Portability : portable
 
 Representación orientada a objetos de una ventana interactiva donde se puede
-mostrar una @División@ con una parte enfocada, y obtener eventos de teclas
+mostrar un 'Diagrama' con una parte enfocada, y obtener eventos de teclas
 pulsadas en la ventana.
 -}
 
@@ -58,7 +58,7 @@ import Diagrams.TwoD.Transform            (scaleX, scaleY)
 import Diagrams.TwoD.Types                (R2(R2))
 import Diagrams.Util                      (( # ))
 import Graphics.Mosaico.Imagen            (Imagen(Imagen, altura, anchura), Color(Color, rojo, verde, azul))
-import Graphics.Mosaico.División          (División((:-:), (:|:), Hoja), Paso(Primero, Segundo), Rectángulo(Rectángulo, color, imagen))
+import Graphics.Mosaico.Diagrama          (Diagrama((:-:), (:|:), Hoja), Paso(Primero, Segundo), Rectángulo(Rectángulo, color, imagen))
 import Graphics.UI.Gtk.Abstract.Container (containerChild)
 import Graphics.UI.Gtk.Abstract.Widget    (EventMask(KeyPressMask), Requisition(Requisition), exposeEvent, keyPressEvent, onDestroy, sizeRequest, widgetAddEvents, widgetDestroy, widgetQueueDraw, widgetShowAll)
 import Graphics.UI.Gtk.Gdk.EventM         (eventKeyName, eventWindow)
@@ -73,17 +73,17 @@ import System.IO                          (IO)
 
 
 
--- | Un valor del tipo @Ventana@ es un objeto que representa a una ventana
--- interactiva donde puede dibujarse una @División@.  Es posible, además,
+-- | Un valor del tipo 'Ventana' es un objeto que representa a una ventana
+-- interactiva donde puede dibujarse un 'Diagrama'.  Es posible, además,
 -- obtener información de qué teclas son pulsadas sobre la ventana.
 data Ventana
   = Ventana
-    { mostrar   ∷ [Paso] → División → IO ()
-    -- ^ Dada una @Ventana@, una @División@, y una lista de @Paso@s,
-    -- representar gráficamente la @División@ dada sobre el lienzo de la
-    -- @Ventana@, haciendo resaltar visualmente el nodo del árbol alcanzado
+    { mostrar   ∷ [Paso] → Diagrama → IO ()
+    -- ^ Dada una 'Ventana', un 'Diagrama', y una lista de 'Paso's,
+    -- representar gráficamente el 'Diagrama' dado sobre el lienzo de la
+    -- 'Ventana', haciendo resaltar visualmente el nodo del árbol alcanzado
     -- si se realizan los movimientos correspondientes a la lista de
-    -- @Paso@s desde la raíz del árbol.
+    -- 'Paso's desde la raíz del árbol.
     --
     -- Los nodos se resaltan con un cuadro verde, y se colorean según el
     -- tipo de nodo.  En el caso de nodos intermedios, se colorea en azul
@@ -92,7 +92,7 @@ data Ventana
     -- nodos terminales (hojas), el rectángulo se colorea en amarillo.
 
     , leerTecla ∷ IO (Maybe String)
-    -- ^ Dada una @Ventana@, esperar por un evento de teclado.
+    -- ^ Dada una 'Ventana', esperar por un evento de teclado.
     --
     -- Cuando sobre la ventana se haya pulsado alguna tecla que no haya sido
     -- reportada a través de este cómputo, se producirá como resultado
@@ -106,22 +106,22 @@ data Ventana
     -- La lista completa está disponible en
     -- <https://git.gnome.org/browse/gtk+/plain/gdk/gdkkeysyms.h el código fuente de la biblioteca GDK>.
     -- Sin embargo, la mejor manera de descubrir cuál simbolo corresponde
-    -- a cada tecla es crear una @Ventana@ y hacer que se imprima el texto
+    -- a cada tecla es crear una 'Ventana' y hacer que se imprima el texto
     -- correspondiente a cada tecla pulsada sobre ella.
 
     , cerrar    ∷ IO ()
-    -- ^ Dada una @Ventana@, hacer que se cierre y que no pueda producir
+    -- ^ Dada una 'Ventana', hacer que se cierre y que no pueda producir
     -- más eventos de teclado.
     }
 
 
 
--- | Construye un objeto del tipo @Ventana@ dadas sus dimensiones en número
+-- | Construye un objeto del tipo 'Ventana' dadas sus dimensiones en número
 -- de píxeles.
 crearVentana
-  ∷ Integer    -- ^ Número de píxeles de anchura de la @Ventana@ a crear.
-  → Integer    -- ^ Número de píxeles de altura de la @Ventana@ a crear.
-  → IO Ventana -- ^ La @Ventana@ nueva, ya visible, con el lienzo en blanco.
+  ∷ Integer    -- ^ Número de píxeles de anchura de la 'Ventana' a crear.
+  → Integer    -- ^ Número de píxeles de altura de la 'Ventana' a crear.
+  → IO Ventana -- ^ La 'Ventana' nueva, ya visible, con el lienzo en blanco.
 
 crearVentana anchura' altura'
   = do
@@ -184,12 +184,12 @@ crearVentana anchura' altura'
         = atomically
         $ readTMChan chan
 
-      mostrar pasos división
+      mostrar pasos diagrama
         = postGUIAsync
         $ do
           atomically
             ∘ writeTVar diagramaV
-            $ renderDivisión pasos división
+            $ renderDiagrama pasos diagrama
 
           widgetQueueDraw drawingArea
 
@@ -197,8 +197,8 @@ crearVentana anchura' altura'
 
 
 
-renderDivisión ∷ [Paso] → División → Diagram Cairo R2
-renderDivisión
+renderDiagrama ∷ [Paso] → Diagrama → Diagram Cairo R2
+renderDiagrama
   = go ∘ pure ∘ reverse
   where
     go pasos

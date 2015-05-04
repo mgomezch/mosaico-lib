@@ -1,5 +1,5 @@
 {-|
-Module      : Graphics.Mosaico.División
+Module      : Graphics.Mosaico.Diagrama
 Description : Distribuciones espaciales de rectángulos coloridos
 Copyright   : ⓒ Manuel Gómez, 2015
 License     : BSD3
@@ -14,8 +14,8 @@ rectángulos de colores calculados a partir de imágenes.
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
-module Graphics.Mosaico.División
-  ( División((:-:), (:|:), Hoja)
+module Graphics.Mosaico.Diagrama
+  ( Diagrama((:-:), (:|:), Hoja)
   , Paso(Primero, Segundo)
   , Rectángulo(Rectángulo, color, imagen)
   )
@@ -26,7 +26,7 @@ import Text.Show               (Show)
 
 
 
--- | Un @Rectángulo@ representa a una región rectangular coloreada
+-- | Un 'Rectángulo' representa a una región rectangular coloreada
 -- uniformemente con su 'color', que ha sido calculado a partir de su
 -- 'imagen'.  El tamaño del rectángulo es el mismo de su imagen.
 data Rectángulo
@@ -39,32 +39,32 @@ data Rectángulo
 
 
 
--- | Una @División@ es un árbol binario decorado en las hojas con
--- @Rectángulo@s, y representa una distribución espacial de @Rectángulo@s
--- en dos dimensiones.  Hay dos especies de nodos intermedios que se usan
--- para distribuir los rectángulos de los subárboles de izquierda
--- a derecha, o arriba y abajo.
-data División
+-- | Un 'Diagrama' es un árbol binario decorado en las hojas con
+-- 'Rectángulo's, y representa una distribución espacial de 'Rectángulo's
+-- en dos dimensiones.  Hay dos especies de nodos intermedios; se usan
+-- para distribuir los diagramas de los subárboles a la izquierda y la derecha,
+-- o arriba y abajo.
+data Diagrama
 
   -- | El constructor para las hojas del árbol que contienen un
-  -- @Rectángulo@.
+  -- 'Rectángulo'.
   = Hoja Rectángulo
 
   -- | Este constructor se usa para especificar que la distribución
   -- espacial de rectángulos del primer subárbol se ubica arriba de la
   -- distribución de rectángulos del segundo subárbol.
-  | División :-: División
+  | Diagrama :-: Diagrama
 
   -- | Este constructor se usa para especificar que la distribución
   -- espacial de rectángulos del primer subárbol se ubica a la la izquierda
   -- de la distribución de rectángulos del segundo subárbol.
-  | División :|: División
+  | Diagrama :|: Diagrama
   deriving Show
 
 
 
--- | Un tipo sencillo conveniente para indicar pasos de caminos en una
--- @División@.
+-- | Un tipo sencillo conveniente para indicar pasos de caminos en un
+-- 'Diagrama'.
 data Paso
 
   -- | Un paso hacia el primer subárbol en un nodo intermedio.
