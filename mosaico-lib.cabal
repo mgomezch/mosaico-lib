@@ -11,6 +11,12 @@ category:      Graphics
 build-type:    Simple
 cabal-version: >=1.10
 -- extra-source-files:
+description:
+  Herramientas para facilitar la generación interactiva de mosaicos.  Se provee
+  un tipo para representar imágenes y cargarlas desde archivos, un tipo de
+  objetos que representan ventanas que sirven como lienzos para dibujar
+  mosaicos, y tipos para representar distribuciones espaciales de rectángulos de
+  colores.
 
 library
   hs-source-dirs:   src
