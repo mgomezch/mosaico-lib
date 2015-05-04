@@ -1,0 +1,2 @@
+`mosaico-lib` provee herramientas para componer aplicaciones que faciliten la
+generación interactiva de mosaicos usando *Haskell*.
