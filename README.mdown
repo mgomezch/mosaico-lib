@@ -1,4 +1,4 @@
-`mosaico-lib` provee herramientas para componer aplicaciones que faciliten la
+`mosaico-lib` provee herramientas para componer aplicaciones que facilitan la
 generación interactiva de mosaicos usando *Haskell*.
 
 Este paquete fue creado para usarse en el proyecto de programación funcional de
