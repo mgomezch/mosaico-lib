@@ -58,12 +58,17 @@ data Color
 
 -- | La representación de una imagen como una matriz de píxeles dados por
 -- el 'Color' de cada uno.
+--
+-- Las dimensiones de la imagen se guardan por separado para no tener que
+-- recorrer las listas de píxeles cada vez que haga falta conocer sus
+-- longitudes.
 data Imagen
   = Imagen
-    { anchura  altura ∷ Integer
-    -- ^ Las dimensiones de la imagen se guardan por separado para no tener que
-    -- recorrer las listas de píxeles cada vez que haga falta conocer sus
-    -- longitudes.
+    { anchura ∷ Integer
+    -- ^ El número de píxeles en cada fila de la 'Imagen'.
+
+    , altura ∷ Integer
+    -- ^ El número de filas de la 'Imagen'.
 
     , datos ∷ [[Color]]
     -- ^ Los datos de color de cada píxel de la imagen.
@@ -97,9 +102,9 @@ leerImagen
 
   → IO (Either String Imagen)
   -- ^ Si el archivo pudo leerse exitosamente y representarse como un valor
-  -- del tipo 'Imagen', 'leerImagen' retorna @'Right' imagen@.  Si no, se
-  -- retorna @'Left' razón@, donde @razón@ será un 'String' con la razón
-  -- por la cual la imagen no se pudo leer.
+  -- del tipo 'Imagen', se produce el resultado @'Data.Either.Right' imagen@.
+  -- Si no, se produce el resultado @'Data.Either.Left' razón@, donde @razón@
+  -- será un 'String' con la razón por la cual la imagen no se pudo leer.
 
 leerImagen filename
   = do
