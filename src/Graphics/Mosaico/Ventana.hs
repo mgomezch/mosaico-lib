@@ -199,7 +199,7 @@ crearVentana anchura' altura'
 
 renderDiagrama ∷ [Paso] → Diagrama → Diagram Cairo R2
 renderDiagrama
-  = go ∘ pure ∘ reverse
+  = go ∘ pure
   where
     go pasos
       = centerXY
